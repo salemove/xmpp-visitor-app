@@ -32,6 +32,10 @@ class VisitorRepo < ROM::Repository[:visitors]
   def delete(id)
     visitors.where(id: id).delete
   end
+
+  def delete_all
+    visitors.delete
+  end
 end
 visitor_repo = VisitorRepo.new(rom)
 
@@ -45,4 +49,8 @@ end
 
 delete '/visitors/:id' do |id|
   visitor_repo.delete(id)
+end
+
+delete '/visitors' do
+  visitor_repo.delete_all
 end
