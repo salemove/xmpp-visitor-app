@@ -1,4 +1,7 @@
 source 'https://rubygems.org'
+gem 'pg'
 gem 'rack-test'
+gem 'rom-repository'
+gem 'rom-sql'
 gem 'rspec'
 gem 'sinatra'
