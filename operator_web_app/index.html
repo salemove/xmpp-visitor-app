@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/>
+    <title>No Dev Left Behind</title>
+  </head>
+  <body>
+    <div id='login' style='text-align: center'>
+      <form name='cred'>
+        <label for='jid'>JID:</label>
+        <input type='text' id='jid' />
+        <label for='pass'>Password:</label>
+        <input type='password' id='pass' />
+        <input type='button' id='connect' value='connect' />
+      </form>
+    </div>
+    <hr />
+    <div id='log'></div>
+    <script type="text/javascript" src="/node_modules/strophe/strophe.js"></script>
+    <script type="text/javascript" src="/node_modules/strophejs-plugin-muc/lib/strophe.muc.js"></script>
+    <script type="text/javascript" src="/main.js"></script>
+  </body>
+</html>
