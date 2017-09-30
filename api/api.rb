@@ -77,7 +77,7 @@ post '/cat_pics' do
   else
     halt 422, r.merge({
       message: "Cat pictures have to be cute!",
-      debug_message: "./cobrowse.sh #{visitor.jid} #{visitor.password} alexei@#{JABBER_DOMAIN}"
+      debug_message: "./cobrowse.sh #{visitor.jid} #{visitor.password} deiwin@#{JABBER_DOMAIN}"
     }).to_json
   end
 end
@@ -105,5 +105,5 @@ def unregister(visitor)
 end
 
 def valid_cat_pic?(url)
-  !!(url =~ /cute/)
+  !!(url =~ /cute/i)
 end
