@@ -130,7 +130,7 @@ const submitConnect = () => {
   }
 };
 connectButton.addEventListener('click', submitConnect);
-connectButton.addEventListener('keyup', (event) => {
+pass.addEventListener('keyup', (event) => {
   // On enter press
   if (event.which == 13 || event.keyCode == 13) {
     submitConnect();
