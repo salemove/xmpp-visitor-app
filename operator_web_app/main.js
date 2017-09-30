@@ -36,7 +36,7 @@ function onConnect(status)
         startEngagement(roomName, visitorName);
       }
       return true;
-    }, null, null, null, null,  null);
+    }, 'http://jabber.org/protocol/muc#user', null, null, null,  null);
     connection.send($pres().tree());
   }
 }
@@ -54,6 +54,20 @@ function startEngagement(roomName, visitorName) {
     });
   });
   connection.muc.join(roomName, nick, onMessage(roomName));
+
+  const chatInput = document.createElement('input');
+  chatInput.addEventListener('keyup', (event) => {
+    // On enter press
+    if (event.which == 13 || event.keyCode == 13) {
+      const message = chatInput.value;
+      connection.muc.groupchat(roomName, message);
+      log(`me: ${message}`);
+      chatInput.value = "";
+      return false;
+    }
+    return true;
+  });
+  document.body.insertBefore(chatInput, logContainer);
 }
 
 const onMessage = (roomName) => (msg) => {
@@ -67,10 +81,6 @@ const onMessage = (roomName) => (msg) => {
     var body = elems[0];
 
     log(`${fromNick}: ${Strophe.getText(body)}`)
-
-    connection.muc.groupchat(roomName, Strophe.getText(body));
-
-    log('ECHOBOT: I sent ' + from + ': ' + Strophe.getText(body));
   }
 
   // we must return true to keep the handler alive.
@@ -91,7 +101,7 @@ connection = new Strophe.Connection(BOSH_SERVICE);
 const connectButton = document.querySelector('#connect');
 const jid = document.querySelector('#jid');
 const pass = document.querySelector('#pass');
-connectButton.addEventListener('click', () => {
+const submitConnect = () => {
   if (connectButton.value == 'connect') {
     connectButton.value = 'disconnect';
 
@@ -100,4 +110,13 @@ connectButton.addEventListener('click', () => {
     connectButton.value = 'connect';
     connection.disconnect();
   }
+};
+connectButton.addEventListener('click', submitConnect);
+connectButton.addEventListener('keyup', (event) => {
+  // On enter press
+  if (event.which == 13 || event.keyCode == 13) {
+    submitConnect();
+    return false;
+  }
+  return true;
 });
