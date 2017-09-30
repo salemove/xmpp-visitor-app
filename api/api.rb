@@ -105,5 +105,5 @@ def unregister(visitor)
 end
 
 def valid_cat_pic?(url)
-  !!(url =~ /cute/)
+  !!(url =~ /cute/i)
 end
