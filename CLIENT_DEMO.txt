@@ -1,0 +1,15 @@
+export JABBER_PWD=secret
+export API_HOST=10.200.0.154:4567
+export JABBER_ID=$(curl -X POST -F "password=secret" $API_HOST/visitors | jq -r .id)
+
+export CAT_URL="http://www.cutestpaw.com/wp-content/uploads/2016/02/Yawn..jpeg"
+open $CAT_URL
+curl -X POST -u $JABBER_ID:$JABBER_PWD -F "url=$CAT_URL" $API_HOST/cat_pics | jq
+
+export CAT_URL="http://f9view.com/wp-content/uploads/2013/07/Cute-Cats-Images-and-HD-Wallpapers-Free-Download.jpg"
+open $CAT_URL
+curl -X POST -u $JABBER_ID:$JABBER_PWD -F "url=$CAT_URL" $API_HOST/cat_pics | jq
+
+export CAT_URL="https://i.pinimg.com/originals/b4/d0/d3/b4d0d33493ddc55d22649e7ebcf83d8f.jpg"
+open $CAT_URL
+curl -X POST -u $JABBER_ID:$JABBER_PWD -F "url=$CAT_URL" $API_HOST/cat_pics | jq
