@@ -23,9 +23,11 @@ describe 'API' do
   it 'can create, list, and delete visitors' do
     password = 'mypass'
     post '/visitors', {password: password}
+    expect(last_response).to be_ok
+    expect(JSON.parse(last_response.body)).to include('id')
+
     get '/visitors'
     expect(last_response).to be_ok
-
     response_body = JSON.parse(last_response.body)
     expect(response_body.length).to be(1)
 

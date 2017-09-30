@@ -27,6 +27,7 @@ end
 post '/visitors' do
   v = visitor_repo.create(password: params.fetch(:password))
   register(v.fetch(:id), params.fetch(:password))
+  {id: v.fetch(:id)}.to_json
 end
 
 delete '/visitors/:id' do |id|
