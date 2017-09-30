@@ -82,6 +82,7 @@ GEM
       tilt (~> 2.0)
     tilt (2.0.8)
     transproc (1.0.2)
+    xmpp4r (0.5.6)
 
 PLATFORMS
   ruby
@@ -93,6 +94,7 @@ DEPENDENCIES
   rom-sql
   rspec
   sinatra
+  xmpp4r
 
 BUNDLED WITH
    1.15.4
