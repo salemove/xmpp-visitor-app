@@ -70,6 +70,8 @@ function startEngagement(roomName, visitorName) {
   document.body.insertBefore(chatInput, logContainer);
 }
 
+const cobrowsingRegex = /^Please cobrowse with me: https:\/\/tmate\.io\/t\/(.*)$/;
+
 const onMessage = (roomName) => (msg) => {
   var to = msg.getAttribute('to');
   var from = msg.getAttribute('from');
@@ -78,9 +80,16 @@ const onMessage = (roomName) => (msg) => {
   var elems = msg.getElementsByTagName('body');
 
   if (['chat', 'groupchat'].indexOf(type) > -1 && elems.length > 0 && fromNick !== nick) {
-    var body = elems[0];
-
-    log(`${fromNick}: ${Strophe.getText(body)}`)
+    var message = Strophe.getText(elems[0]);
+    const cobrowsingMatch = message.match(cobrowsingRegex);
+    if (cobrowsingMatch) {
+      const sessionToken = cobrowsingMatch[1];
+      const frame = document.createElement('iframe');
+      frame.src = `http://localhost:3000/wetty/ssh/${sessionToken}`;
+      document.body.appendChild(frame);
+    } else {
+      log(`${fromNick}: ${message}`);
+    }
   }
 
   // we must return true to keep the handler alive.
