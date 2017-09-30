@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 if [ "$#" -ne 3 ]; then
   echo "Usage: $0 UserJID Password OperatorJID"
   exit 1
@@ -9,13 +11,14 @@ echo "Starting cobrowsing session for you in 2 seconds"
 sleep 2
 
 CWD=`pwd`
+SOCK_PATH=/tmp/tmate.sock
 
-tmux new-session '/bin/bash -l'\; \
-     send-keys "cd $CWD" Enter\; \
-     send-keys "./chat/cli.rb $*" Enter\; \
-     split-window '/bin/bash -l'\; \
-     select-layout main-vertical
+# Start tmate session
+tmate -S $SOCK_PATH new-session -d
+tmate -S $SOCK_PATH wait tmate-ready
+COBROWSING_LINK=`tmate -S $SOCK_PATH display -p '#{tmate_web}'`
 
-#tmux new-session "./chat/cli.rb $*" \; \
-#     split-window '/bin/bash -l'\; \
-#     select-layout main-vertical
+tmate -S $SOCK_PATH send-keys "cd $CWD; ./chat/cli.rb $* $COBROWSING_LINK" Enter
+tmate -S $SOCK_PATH split-window "/bin/bash -l"
+tmate -S $SOCK_PATH select-layout main-vertical
+tmate -S $SOCK_PATH attach-session

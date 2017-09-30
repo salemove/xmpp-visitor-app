@@ -14,10 +14,10 @@ module Chat
       @muc_client = build_muc_client
     end
 
-    def start
+    def start(greetings)
       join_room
       invite_operator unless operator_present?
-      begin_conversation
+      begin_conversation(greetings)
     end
 
     private
@@ -73,7 +73,9 @@ module Chat
       @jabber_client.send(message)
     end
 
-    def begin_conversation
+    def begin_conversation(greetings)
+      @muc_client.say(greetings) if greetings
+
       main_thread = Thread.current
 
       Thread.start do

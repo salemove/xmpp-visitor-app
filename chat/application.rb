@@ -18,9 +18,9 @@ module Chat
       @password = password
     end
 
-    def start
+    def start(greetings)
       authenticate
-      start_conversation
+      start_conversation(greetings)
     end
 
     private
@@ -31,12 +31,12 @@ module Chat
       @jabber_client.send(Jabber::Presence.new)
     end
 
-    def start_conversation
+    def start_conversation(greetings)
       Conversation.new(
         @jabber_client,
         @visitor_jid,
         @operator_jid
-      ).start
+      ).start(greetings)
     end
   end
 end
