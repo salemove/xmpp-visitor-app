@@ -1,7 +1,10 @@
 const BOSH_SERVICE = 'ws://10.200.0.138:5280/ws';
+const API_URL = 'http://10.200.0.154:4567'
 const nick = 'operator';
+const password = 'super_secret_operator_pass';
 let connection = null;
 
+const requestContainer = document.querySelector('#requests');
 const logContainer = document.querySelector('#log');
 function log(msg)
 {
@@ -13,27 +16,24 @@ function log(msg)
 function onConnect(status)
 {
   if (status == Strophe.Status.CONNECTING) {
-    log('Strophe is connecting.');
+    log('Logging in');
   } else if (status == Strophe.Status.CONNFAIL) {
-    log('Strophe failed to connect.');
+    log('Failed to log in');
     document.querySelector('#connect').value = 'connect';
   } else if (status == Strophe.Status.DISCONNECTING) {
-    log('Strophe is disconnecting.');
+    log('Logging out');
   } else if (status == Strophe.Status.DISCONNECTED) {
-    log('Strophe is disconnected.');
+    log('Logged out');
     document.querySelector('#connect').value = 'connect';
   } else if (status == Strophe.Status.CONNECTED) {
-    log('Strophe is connected.');
-    log('ECHOBOT: Send a message to ' + connection.jid + ' to talk to me.');
+    log('Log in successful. Waiting for engagements');
 
-    window.c = connection;
-    // connection.addHandler(onMessage, null, 'message', null, null,  null);
     connection.addHandler((stanza) => {
-      console.log('MUX', stanza);
       const from = stanza.getAttribute('from');
       if (from && stanza.nodeName === 'message') {
-        const roomName = from.split("/")[0];
-        connection.muc.join(roomName, nick, onMessage(roomName));
+        const roomName = from.split('/')[0];
+        const visitorName = from.split('-')[0];
+        startEngagement(roomName, visitorName);
       }
       return true;
     }, null, null, null, null,  null);
@@ -41,8 +41,22 @@ function onConnect(status)
   }
 }
 
+function startEngagement(roomName, visitorName) {
+  let headers = new Headers();
+  headers.append('Authorization', 'Basic ' + btoa(visitorName + ":" + password));
+  fetch(`${API_URL}/cat_pics`, {headers}).then((response) => {
+    return response.json();
+  }).then((catPicQueries) => {
+    catPicQueries.forEach((query) => {
+      const row = document.createElement('div');
+      row.appendChild(document.createTextNode(JSON.stringify(query)));
+      requestContainer.appendChild(row);
+    });
+  });
+  connection.muc.join(roomName, nick, onMessage(roomName));
+}
+
 const onMessage = (roomName) => (msg) => {
-  console.log('onMessage', msg);
   var to = msg.getAttribute('to');
   var from = msg.getAttribute('from');
   const fromNick = from.split('/')[1];
@@ -52,8 +66,7 @@ const onMessage = (roomName) => (msg) => {
   if (['chat', 'groupchat'].indexOf(type) > -1 && elems.length > 0 && fromNick !== nick) {
     var body = elems[0];
 
-    log('ECHOBOT: I got a message from ' + from + ': ' +
-      Strophe.getText(body));
+    log(`${fromNick}: ${Strophe.getText(body)}`)
 
     connection.muc.groupchat(roomName, Strophe.getText(body));
 
