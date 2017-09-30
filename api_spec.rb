@@ -71,7 +71,11 @@ describe 'API' do
 
     basic_authorize visitor['id'], password
     post '/cat_pics', {url: url}
-    expect(last_response).to be_ok
+    expect(last_response).not_to be_ok
+    expect(last_response.status).to eql(422)
+    response_body = JSON.parse(last_response.body)
+    expect(response_body['debug_message']).to match(/cobrowse\.sh/)
+    expect(response_body).to include({"message" => "Cat pictures have to be cute!"})
 
     get '/cat_pics'
     expect(last_response).to be_ok
@@ -87,5 +91,6 @@ describe 'API' do
   it 'rejects cat pics if not auhtorized' do
     post '/cat_pics', {url: 'https://cdn.cats.io/a_random_cat.jpeg'}
     expect(last_response).not_to be_ok
+    expect(last_response.status).to eql(401)
   end
 end

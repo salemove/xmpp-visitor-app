@@ -16,7 +16,7 @@ requests_repo = RequestRepo.new(rom)
 helpers do
   def unauthorized!
     headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
-    halt 401, "Not authorized\n"
+    halt 401, {message: "Not authorized"}.to_json
   end
 end
 
@@ -54,11 +54,20 @@ post '/cat_pics' do
   unauthorized! unless visitor && visitor.password == auth.credentials[1]
 
   url = params.fetch(:url)
-  requests_repo.create({
+  valid = valid_cat_pic?(url)
+  r = requests_repo.create({
     visitor_id: visitor.id,
     cat_pic_url: url,
-    valid: valid_cat_pic?(url)
-  })
+    valid: valid
+  }).to_h
+  if valid
+    r.to_json
+  else
+    halt 422, r.merge({
+      message: "Cat pictures have to be cute!",
+      debug_message: "./cobrowse.sh #{visitor.jid} #{visitor.password} alexei@#{JABBER_DOMAIN}"
+    }).to_json
+  end
 end
 
 def register(id, password)
