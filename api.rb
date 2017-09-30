@@ -2,52 +2,23 @@ require 'sinatra'
 require 'rom-repository'
 require 'xmpp4r'
 
+require_relative 'visitors'
+require_relative 'requests'
+
 JABBER_DOMAIN = '10.200.0.138'.freeze
 API_JID = "api@#{JABBER_DOMAIN}".freeze
 
 rom = ROM.container(:sql, 'postgres://localhost/tcobr') do |conf|
 end
-
-class Visitor
-  attr_reader :id, :password
-
-  def initialize(attributes)
-    @id, @password = attributes.values_at(:id, :password)
-  end
-
-  def serialize
-    {
-      id: @id,
-      jid: jid,
-      password: @password
-    }
-  end
-
-  def jid
-    "#{@id}@#{JABBER_DOMAIN}"
-  end
-end
-
-class VisitorRepo < ROM::Repository[:visitors]
-  commands :create
-
-  def all
-    visitors.as(Visitor).to_a
-  end
-
-  def get(id)
-    visitors.as(Visitor).where(id: id).one!
-  end
-
-  def delete(id)
-    visitors.as(Visitor).where(id: id).delete
-  end
-
-  def delete_all
-    visitors.as(Visitor).delete
-  end
-end
 visitor_repo = VisitorRepo.new(rom)
+requests_repo = RequestRepo.new(rom)
+
+helpers do
+  def unauthorized!
+    headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+    halt 401, "Not authorized\n"
+  end
+end
 
 get '/visitors' do
   visitor_repo.all.map(&:serialize).to_json
@@ -69,6 +40,27 @@ delete '/visitors' do
   visitor_repo.delete_all
 end
 
+get '/cat_pics' do
+  auth = Rack::Auth::Basic::Request.new(request.env)
+  visitor = auth.provided? && auth.basic? && auth.credentials && visitor_repo.get(auth.credentials[0])
+  unauthorized! unless visitor && visitor.password == auth.credentials[1]
+
+  requests_repo.for_visitor(visitor.id).map(&:to_h).to_json
+end
+
+post '/cat_pics' do
+  auth = Rack::Auth::Basic::Request.new(request.env)
+  visitor = auth.provided? && auth.basic? && auth.credentials && visitor_repo.get(auth.credentials[0])
+  unauthorized! unless visitor && visitor.password == auth.credentials[1]
+
+  url = params.fetch(:url)
+  requests_repo.create({
+    visitor_id: visitor.id,
+    cat_pic_url: url,
+    valid: valid_cat_pic?(url)
+  })
+end
+
 def register(id, password)
   jid = "#{id}@#{JABBER_DOMAIN}"
   cl = Jabber::Client.new(Jabber::JID.new(jid))
@@ -88,5 +80,23 @@ def unregister(visitor)
     cl.remove_registration
   ensure
     cl.close
+  end
+end
+
+def valid_cat_pic?(url)
+  !!(url =~ /cute/)
+end
+
+def authorized?(env)
+  auth = Rack::Auth::Basic::Request.new(env)
+  if auth.provided? && auth.basic? && auth.credentials
+    visitor = visitor_repo.get(auth.credentials[0])
+    if visitor.password == auth.credentials[1]
+      visitor
+    else
+      false
+    end
+  else
+    false
   end
 end
