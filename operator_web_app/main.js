@@ -53,7 +53,15 @@ function startEngagement(roomName, visitorName) {
       requestContainer.appendChild(row);
     });
   });
-  connection.muc.join(roomName, nick, onMessage(roomName));
+  connection.muc.join(roomName, nick, onMessage(roomName), (stanza) => {
+    if (stanza.getAttribute('type') === 'unavailable' && stanza.getAttribute('from').split('/')[1] !== nick) {
+      log(`Visitor ${stanza.getAttribute('from').split('/')[1]} left!`);
+      const frame = document.querySelector('#cobrowser');
+      frame.parentElement.removeChild(frame);
+      log('Waiting for Engagements.');
+    }
+    return true;
+  });
 
   const chatInput = document.createElement('input');
   chatInput.addEventListener('keyup', (event) => {
@@ -85,6 +93,7 @@ const onMessage = (roomName) => (msg) => {
     if (cobrowsingMatch) {
       const sessionToken = cobrowsingMatch[1];
       const frame = document.createElement('iframe');
+      frame.id = 'cobrowser';
       frame.src = `http://localhost:3000/wetty/ssh/${sessionToken}`;
       document.body.appendChild(frame);
     } else {
