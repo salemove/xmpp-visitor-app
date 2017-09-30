@@ -26,7 +26,7 @@ function onConnect(status)
     log('Logged out');
     document.querySelector('#connect').value = 'connect';
   } else if (status == Strophe.Status.CONNECTED) {
-    log('Log in successful. Waiting for engagements');
+    log('Log in successful. Waiting for Engagements');
 
     connection.addHandler((stanza) => {
       const from = stanza.getAttribute('from');
@@ -107,14 +107,6 @@ const onMessage = (roomName) => (msg) => {
 }
 
 connection = new Strophe.Connection(BOSH_SERVICE);
-
-// Uncomment the following lines to spy on the wire traffic.
-//connection.rawInput = function (data) { log('RECV: ' + data); };
-//connection.rawOutput = function (data) { log('SEND: ' + data); };
-
-// Uncomment the following line to see all the debug output.
-//Strophe.log = function (level, msg) { log('LOG: ' + msg); };
-
 
 const connectButton = document.querySelector('#connect');
 const jid = document.querySelector('#jid');
